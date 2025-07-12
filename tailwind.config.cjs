@@ -4,6 +4,7 @@ module.exports = {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class', // добавлено
   safelist: [
     // Цветовые классы
     'bg-yellow-100', 'bg-yellow-200', 'bg-yellow-300',

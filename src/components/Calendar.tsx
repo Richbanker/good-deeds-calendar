@@ -22,7 +22,7 @@ function formatDate(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-const Calendar = ({ year, month, deeds, today, onDayClick }: CalendarProps) => {
+export default function Calendar({ year, month, deeds, today, onDayClick }: CalendarProps) {
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = new Date(year, month, 1).getDay();
   const offset = firstDay === 0 ? 6 : firstDay - 1;
@@ -42,71 +42,43 @@ const Calendar = ({ year, month, deeds, today, onDayClick }: CalendarProps) => {
   }
 
   return (
-    <div className="w-full flex flex-col items-center">
-      <div className="mb-4 drop-shadow-md text-center">
-        <span style={{ fontSize: '3rem', fontWeight: 900, color: '#7c3aed' }}>{MONTHS[month]} {year}</span>
+    <div className="w-full p-2 calendar-wrapper">
+      <div className="mb-4 text-center drop-shadow-md">
+        <span className="text-[clamp(1.5rem,5vw,2.5rem)] font-black text-purple-600 dark:text-yellow-300">
+          {MONTHS[month]} {year}
+        </span>
       </div>
 
-      <table style={{ fontSize: '2rem' }}>
-        <thead>
-          <tr>
-            {WEEKDAYS.map((w) => (
-              <th
-                key={w}
-                style={{ padding: '18px', fontWeight: 700, fontSize: '2rem', fontFamily: 'Nunito, system-ui, sans-serif', color: '#2563eb' }}
-              >
-                {w}
-              </th>
-            ))}
-          </tr>
-        </thead>
+      <div className="grid grid-cols-7 gap-1 text-sm font-bold text-blue-600 dark:text-yellow-200 w-full max-w-md mx-auto mb-2">
+        {WEEKDAYS.map((w) => (
+          <div key={w} className="text-center py-1">{w}</div>
+        ))}
+      </div>
 
-        <tbody>
-          {weeks.map((week, i) => (
-            <tr key={i}>
-              {week.map((day, j) => {
-                if (!day) {
-                  return <td key={j} style={{ width: 80, height: 80 }} />;
-                }
+      <div className="grid grid-cols-7 gap-1 w-full max-w-md mx-auto">
+        {weeks.flat().map((day, index) => {
+          if (!day) return <div key={index} className="aspect-square" />;
+          const dateStr = formatDate(year, month, day);
+          const deed = deeds[dateStr];
+          const isToday = day === today;
 
-                const dateStr = formatDate(year, month, day);
-                const deed = deeds[dateStr];
-                const isToday = day === today;
-
-                return (
-                  <td key={j} style={{ padding: 8 }}>
-                    <button
-                      style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: 16,
-                        fontSize: '2rem',
-                        fontWeight: 900,
-                        fontFamily: 'Nunito, system-ui, sans-serif',
-                        border: isToday ? '2px solid #facc15' : '2px solid #a5b4fc',
-                        background: isToday ? '#fef3c7' : 'rgba(255,255,255,0.8)',
-                        color: isToday ? '#b45309' : '#2563eb',
-                        transition: 'all 0.2s',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: deed ? '0 0 0 4px #fde68a' : undefined
-                      }}
-                      onClick={() => onDayClick(day)}
-                    >
-                      <span>{day}</span>
-                      {deed?.icon && <span style={{ fontSize: '2rem' }}>{deed.icon}</span>}
-                    </button>
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          return (
+            <button
+              key={index}
+              onClick={() => onDayClick(day)}
+              className={`
+                aspect-square rounded-xl font-bold flex flex-col items-center justify-center text-[clamp(1rem,4vw,1.25rem)]
+                transition-all border-2 shadow-sm
+                ${isToday ? 'bg-yellow-100 border-yellow-400 text-amber-700' : 'bg-white/80 border-indigo-300 text-blue-600 dark:bg-gray-700 dark:text-yellow-100 dark:border-gray-500'}
+                ${deed ? 'shadow-[0_0_0_4px_#fde68a]' : ''}
+              `}
+            >
+              <span>{day}</span>
+              {deed?.icon && <span className="text-xl">{deed.icon}</span>}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
-};
-
-export default Calendar;
+}
