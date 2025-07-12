@@ -1,4 +1,3 @@
-import React from 'react';
 import type { GoodDeed } from '../store/useAppStore';
 
 const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];

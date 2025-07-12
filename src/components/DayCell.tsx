@@ -1,5 +1,3 @@
-import React from 'react';
-
 export interface DayCellProps {
   day: number;
   isToday: boolean;
