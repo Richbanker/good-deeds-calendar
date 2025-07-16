@@ -1,42 +1,33 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-
 export interface GoodDeed {
   date: string;
   icon: string;
   text: string;
 }
 
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
 interface AppState {
   deeds: Record<string, GoodDeed>;
-  theme: 'light' | 'dark';
-  modalOpen: boolean;
-  selectedDay: number | null;
   addDeed: (deed: GoodDeed) => void;
-  setTheme: (theme: 'light' | 'dark') => void;
-  setModalOpen: (open: boolean) => void;
-  setSelectedDay: (day: number | null) => void;
+  removeDeed: (date: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
       deeds: {},
-      theme: 'light',
-      modalOpen: false,
-      selectedDay: null,
-      addDeed: (deed) => set((state) => ({
-        deeds: {
-          ...state.deeds,
-          [deed.date]: deed,
-        },
-      })),
-      setTheme: (theme) => set({ theme }),
-      setModalOpen: (modalOpen) => set({ modalOpen }),
-      setSelectedDay: (selectedDay) => set({ selectedDay }),
+      addDeed: (deed) =>
+        set((state) => ({
+          deeds: { ...state.deeds, [deed.date]: deed },
+        })),
+      removeDeed: (date) =>
+        set((state) => {
+          const copy = { ...state.deeds };
+          delete copy[date];
+          return { deeds: copy };
+        }),
     }),
-    {
-      name: 'good-deeds-storage',
-    }
+    { name: "good-deeds-storage" }
   )
 );

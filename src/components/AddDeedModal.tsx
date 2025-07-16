@@ -1,114 +1,177 @@
-import { useState, useEffect, useRef } from 'react';
-
-const PRESET_DEEDS = [
-  { icon: '❤️', text: 'Сделал комплимент' },
-  { icon: '🤝', text: 'Помог другу' },
-  { icon: '📚', text: 'Прочитал книгу' },
-  { icon: '🧹', text: 'Убрал в комнате' },
-];
-
-const EMOJI_LIST = ['🌟', '🍏', '🧸', '📝', '🧑‍🍳', '🎨', '🛒', '🦷', '🦄', '🏆'];
+import React, { useState, useEffect, useRef } from "react";
+import type { GoodDeed } from "../store/useAppStore";
 
 interface AddDeedModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (icon: string, text: string) => void;
+  onRemove?: () => void;
+  existingDeed?: GoodDeed | null;
 }
 
-export default function AddDeedModal({ isOpen, onClose, onSave }: AddDeedModalProps) {
-  const [selected, setSelected] = useState<number | null>(null);
-  const [customText, setCustomText] = useState('');
-  const [customIcon, setCustomIcon] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+const PRESET_DEEDS = [
+  { icon: "❤️", text: "Сделал комплимент" },
+  { icon: "🤝", text: "Помог другу" },
+  { icon: "📚", text: "Прочитал книгу" },
+  { icon: "🧸", text: "Поделился игрушкой" },
+  { icon: "🧹", text: "Убрал в комнате" },
+];
+
+const EMOJI_LIST = [
+  "🌸", "🌻", "🌼", "🍀", "🌈", "🌞",
+  "🐝", "🦋", "⭐", "💫", "🌟", "❤️",
+  "🤗", "🎁", "🍎", "🍭", "🚀", "🧩",
+  "😃", "😇", "😎", "🥰", "😺", "🐶"
+];
+
+export default function AddDeedModal({
+  isOpen,
+  onClose,
+  onSave,
+  onRemove,
+  existingDeed,
+}: AddDeedModalProps) {
+  const [icon, setIcon] = useState("");
+  const [text, setText] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const iconInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isOpen) inputRef.current?.focus();
-  }, [isOpen]);
+    if (existingDeed) {
+      setIcon(existingDeed.icon);
+      setText(existingDeed.text);
+    } else {
+      setIcon("");
+      setText("");
+    }
+  }, [existingDeed, isOpen]);
+
+  // Скрывать emoji picker при клике вне
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target as Node) &&
+        iconInputRef.current &&
+        !iconInputRef.current.contains(e.target as Node)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    }
+    if (showEmojiPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showEmojiPicker]);
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 w-96 max-w-full modal-scrollable shadow-2xl">
-        <h2 className="text-xl font-bold mb-4 text-center text-blue-800 dark:text-yellow-300">Что хорошего ты сделал сегодня?</h2>
+  const handleSave = () => {
+    if (icon && text) {
+      onSave(icon, text);
+      onClose(); // Закрыть модалку после сохранения
+    }
+  };
 
-        <div className="grid grid-cols-2 gap-4 mb-4">
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        <h2>{existingDeed ? "Редактировать/удалить" : "Новое доброе дело"}</h2>
+
+        <div className="preset-deeds">
           {PRESET_DEEDS.map((deed, idx) => (
             <button
               key={idx}
+              className={`preset-btn ${text === deed.text ? "active" : ""}`}
               onClick={() => {
-                setSelected(idx);
-                setCustomText('');
-                setCustomIcon('');
+                setIcon(deed.icon);
+                setText(deed.text);
               }}
-              className={`p-3 rounded-xl border font-medium flex gap-2 items-center justify-center text-sm
-                ${selected === idx
-                  ? 'bg-yellow-100 border-yellow-400 text-yellow-800'
-                  : 'bg-blue-100 border-blue-200 text-blue-800 dark:bg-gray-700 dark:text-yellow-100'}`}
             >
-              <span>{deed.icon}</span>
-              <span>{deed.text}</span>
+              {deed.icon} {deed.text}
             </button>
           ))}
         </div>
 
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder="Свое доброе дело..."
-          className="border rounded-lg px-3 py-2 w-full mb-4 text-black dark:text-white dark:bg-gray-700"
-          value={customText}
-          onChange={(e) => {
-            setCustomText(e.target.value);
-            setSelected(null);
-          }}
-        />
-
-        <div className="grid grid-cols-5 gap-2 mb-4">
-          {EMOJI_LIST.map((emoji, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                setCustomIcon(emoji);
-                setSelected(null);
+        <div style={{ position: "relative" }}>
+          <input
+            type="text"
+            placeholder="Иконка (например 🌸)"
+            value={icon}
+            maxLength={2}
+            onChange={e => setIcon(e.target.value)}
+            onFocus={() => setShowEmojiPicker(true)}
+            ref={iconInputRef}
+            autoComplete="off"
+          />
+          {showEmojiPicker && (
+            <div
+              ref={emojiPickerRef}
+              style={{
+                position: "absolute",
+                top: "110%",
+                left: 0,
+                background: "#fff",
+                border: "1.5px solid #ffb3e6",
+                borderRadius: 8,
+                boxShadow: "0 2px 8px #ffb3e633",
+                padding: 8,
+                zIndex: 10,
+                display: "grid",
+                gridTemplateColumns: "repeat(6, 1fr)",
+                gap: 4,
+                minWidth: 180
               }}
-              className={`text-xl p-2 rounded-lg border
-                ${customIcon === emoji ? 'bg-yellow-100 border-yellow-400' : 'bg-blue-100 border-blue-200 dark:bg-gray-600'}`}
             >
-              {emoji}
-            </button>
-          ))}
+              {EMOJI_LIST.map((emoji) => (
+                <button
+                  key={emoji}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontSize: "1.3em",
+                    cursor: "pointer",
+                    padding: 2
+                  }}
+                  onClick={() => {
+                    setIcon(emoji);
+                    setShowEmojiPicker(false);
+                    iconInputRef.current?.focus();
+                  }}
+                  tabIndex={-1}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-
         <input
           type="text"
-          placeholder="или свой 😊"
-          className="border rounded-lg px-3 py-2 w-full mb-4 text-black dark:text-white dark:bg-gray-700"
-          value={customIcon}
-          onChange={(e) => {
-            setCustomIcon(e.target.value);
-            setSelected(null);
-          }}
-          maxLength={2}
+          placeholder="Своё доброе дело..."
+          value={text}
+          maxLength={40}
+          onChange={e => setText(e.target.value)}
         />
 
-        <div className="flex justify-center gap-4">
+        <div className="modal-actions">
+          {existingDeed && onRemove && (
+            <button className="btn-remove" onClick={onRemove}>
+              ❌ Удалить
+            </button>
+          )}
           <button
-            disabled={selected === null && (!customText || !customIcon)}
-            onClick={() => {
-              if (selected !== null) onSave(PRESET_DEEDS[selected].icon, PRESET_DEEDS[selected].text);
-              else onSave(customIcon, customText);
-              onClose();
-            }}
-            className="bg-yellow-300 text-yellow-900 px-4 py-2 rounded-xl font-bold hover:bg-yellow-400 shadow active:scale-95"
+            className="btn-save"
+            disabled={!icon || !text}
+            onClick={handleSave}
           >
-            Сохранить
+            ✅ Сохранить
           </button>
-          <button
-            className="bg-gray-300 dark:bg-gray-500 text-gray-900 px-4 py-2 rounded-xl font-bold hover:bg-gray-400 shadow active:scale-95"
-            onClick={onClose}
-          >
-            Отмена
+          <button className="btn-close" onClick={onClose}>
+            Закрыть
           </button>
         </div>
       </div>
