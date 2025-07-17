@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { GoodDeed } from "../store/useAppStore";
 
 interface AddDeedModalProps {
