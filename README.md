@@ -1,5 +1,8 @@
 # 🌟 Good Deeds Calendar
 
+
+[![Просмотры README](https://vbr.nathanchung.dev/badge?page_id=Richbanker.good-deeds-calendar&text=README_Views)](https://github.com/Richbanker/good-deeds-calendar)
+
 Интерактивное мини-приложение для Telegram.
 Помогает детям (и не только) отмечать свои добрые поступки каждый день в виде красивого календаря с эмодзи.
 
