@@ -80,11 +80,13 @@ export default function Calendar({
 
           const dateStr = formatDate(year, month, day);
           const deed = deeds[dateStr];
+          const dateLabel = new Date(year, month, day).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
           const isToday = day === today;
 
           return (
             <button
               key={index}
+              aria-label={dateLabel + (deed ? ", доброе дело записано" : "")}
               onClick={() => onDayClick(day)}
               className={`calendar-cell ${isToday ? "today" : ""} ${deed ? "has-deed" : ""}`}
             >
