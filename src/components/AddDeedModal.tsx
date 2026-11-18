@@ -70,8 +70,9 @@ export default function AddDeedModal({
   if (!isOpen) return null;
 
   const handleSave = () => {
-    if (icon && text) {
-      onSave(icon, text);
+    const trimmedText = text.trim();
+    if (icon.trim() && trimmedText) {
+      onSave(icon, trimmedText);
       onClose(); // Закрыть модалку после сохранения
     }
   };
@@ -165,7 +166,7 @@ export default function AddDeedModal({
           )}
           <button
             className="btn-save"
-            disabled={!icon || !text}
+            disabled={!icon.trim() || !text.trim()}
             onClick={handleSave}
           >
             ✅ Сохранить
