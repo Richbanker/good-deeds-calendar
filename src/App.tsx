@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Calendar from "./components/Calendar";
 import AddDeedModal from "./components/AddDeedModal";
 import { useAppStore } from "./store/useAppStore";
@@ -6,7 +6,14 @@ import { getToday, formatDate } from "./utils/dateUtils";
 import "./App.css";
 
 export default function App() {
-  const today = getToday();
+  const [today, setToday] = useState(getToday);
+
+  useEffect(() => {
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const timeout = window.setTimeout(() => setToday(getToday()), nextMidnight.getTime() - now.getTime() + 100);
+    return () => window.clearTimeout(timeout);
+  }, [today.year, today.month, today.day]);
   const deeds = useAppStore((s) => s.deeds);
   const addDeed = useAppStore((s) => s.addDeed);
   const removeDeed = useAppStore((s) => s.removeDeed);
