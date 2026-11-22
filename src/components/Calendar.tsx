@@ -44,6 +44,8 @@ export default function Calendar({
   onDayClick,
 }: CalendarProps) {
   const daysInMonth = getDaysInMonth(year, month);
+  const now = new Date();
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
   const offset = firstDay === 0 ? 6 : firstDay - 1;
 
@@ -81,7 +83,7 @@ export default function Calendar({
           const dateStr = formatDate(year, month, day);
           const deed = deeds[dateStr];
           const dateLabel = new Date(year, month, day).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
-          const isToday = day === today;
+          const isToday = isCurrentMonth && day === today;
 
           return (
             <button
